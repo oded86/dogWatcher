@@ -18,7 +18,7 @@ class MyHandler(PatternMatchingEventHandler):
 
     def process(self, event):
         num_workers = 5
-        url = "var/www/html" + event.src_path.replace('../', '')
+        url = "var/www/html/" + event.src_path.replace('../', '')
         image_details = ImageDetails(event.src_path).get_image_details()
         lat = str(image_details['Latitude'])
         lon = str(image_details['Longitude'])

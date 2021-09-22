@@ -28,7 +28,7 @@ class MyHandler(PatternMatchingEventHandler):
         try:
             with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
                 res = self.request_post(url, json.dumps(payload))
-                if res.text == 'we reconigzed dog ':
+                if "we reconigzed do" in res.text:
                     bt = Backoffice_trello(url, json.dumps(payload))
                     print(bt.open_trello_ticket())  # above returns json details of the card just created
 

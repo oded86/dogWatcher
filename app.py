@@ -13,26 +13,27 @@ from backoffice_trello import Backoffice_trello
 class MyHandler(PatternMatchingEventHandler):
 
     def request_post(self, url, payload):
-        r = requests.post("https://incontrol-sys.com:8443/dogcatIn", data=payload, headers={'Connection': 'close'})
+        r = requests.post("http://incontrol-sys.com:8000/dogcatIn", data=payload, headers={'Connection': 'close'})
         # print(r.text)
         return r
 
     def process(self, event):
         num_workers = 5
-        url = "rishon_images/pats_us2.jpg"
+        url = event.src_path.replace('../', '')
+        image_full_details = ImageDetails(event.src_path).get_full_image_details()
+        #print(type(image_full_details))
+        #print(str(image_full_details))
         image_details = ImageDetails(event.src_path).get_image_details()
         lat = str(image_details['Latitude'])
         lon = str(image_details['Longitude'])
         payload = {"lat": lat, "long": lon, "url": url}
-        # print(json.dumps(payload))
         try:
             with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
                 res = self.request_post(url, json.dumps(payload))
-                if "we reconigzed do" in res.text:
-                    bt = Backoffice_trello(url, json.dumps(payload))
-                    print(bt.open_trello_ticket())  # above returns json details of the card just created
-
                 print(res.text)
+                if "we reconigzed dog" in res.text:
+                    bt = Backoffice_trello(url, image_full_details)
+                    print(bt.open_trello_ticket())  # above returns json details of the card just created
         except:
             pass
 

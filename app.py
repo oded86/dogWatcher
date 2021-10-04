@@ -8,7 +8,7 @@ import concurrent
 import concurrent.futures
 from image_details import ImageDetails
 from backoffice_trello import Backoffice_trello
-
+from message_center import MessageCenter
 
 class MyHandler(PatternMatchingEventHandler):
 
@@ -20,6 +20,7 @@ class MyHandler(PatternMatchingEventHandler):
     def process(self, event):
         num_workers = 5
         url = event.src_path.replace('../', '')
+        url = event.src_path.replace('.\\', 'rishon_images/')
         image_full_details = ImageDetails(event.src_path).get_full_image_details()
         #print(type(image_full_details))
         #print(str(image_full_details))
@@ -27,13 +28,17 @@ class MyHandler(PatternMatchingEventHandler):
         lat = str(image_details['Latitude'])
         lon = str(image_details['Longitude'])
         payload = {"lat": lat, "long": lon, "url": url}
+        print(payload)
         try:
             with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
                 res = self.request_post(url, json.dumps(payload))
                 print(res.text)
-                if "we reconigzed dog" in res.text:
+                if "We recognize dogs" in res.text:
                     bt = Backoffice_trello(url, image_full_details)
                     print(bt.open_trello_ticket())  # above returns json details of the card just created
+                    mc = MessageCenter(url, res.text)
+                    #mc.send_message("WHATSAPP")
+                    mc.send_message("SMS")
         except:
             pass
 

@@ -20,7 +20,7 @@ class MyHandler(PatternMatchingEventHandler):
     def process(self, event):
         num_workers = 5
         url = event.src_path.replace('../', '')
-        url = event.src_path.replace('.\\', 'rishon_images/')
+        url = url.replace('.\\', 'rishon_images/')
         image_full_details = ImageDetails(event.src_path).get_full_image_details()
         #print(type(image_full_details))
         #print(str(image_full_details))

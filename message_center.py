@@ -21,6 +21,7 @@ class MessageCenter:
             if service_flag == 'WHATSAPP':
                 phone_to = "whatsapp:" + phone_to
             else:
+                self.from_number = '+14753291766'
                 pass
             try:
                 client = Client(self.TWILIO_ACCOUNT_SID, self.TWILIO_TOKEN)

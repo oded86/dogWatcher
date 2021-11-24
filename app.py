@@ -7,8 +7,10 @@ import requests
 import concurrent
 import concurrent.futures
 from image_details import ImageDetails
-from backoffice_trello import Backoffice_trello
+from backoffice_trello import BackofficeTrello
 from message_center import MessageCenter
+from recorder import dogRecorder
+
 
 class MyHandler(PatternMatchingEventHandler):
 
@@ -21,9 +23,10 @@ class MyHandler(PatternMatchingEventHandler):
         num_workers = 5
         url = event.src_path.replace('../', '')
         url = url.replace('.\\', 'rishon_images/')
+        camera_url = 'rtsp://admin:Champi0n%24@2.55.114.241:8554/1'
         image_full_details = ImageDetails(event.src_path).get_full_image_details()
-        #print(type(image_full_details))
-        #print(str(image_full_details))
+        # print(type(image_full_details))
+        # print(str(image_full_details))
         image_details = ImageDetails(event.src_path).get_image_details()
         lat = str(image_details['Latitude'])
         lon = str(image_details['Longitude'])
@@ -34,11 +37,22 @@ class MyHandler(PatternMatchingEventHandler):
                 res = self.request_post(url, json.dumps(payload))
                 print(res.text)
                 if "We recognize dogs" in res.text:
-                    bt = Backoffice_trello(url, image_full_details)
-                    print(bt.open_trello_ticket())  # above returns json details of the card just created
-                    mc = MessageCenter(url, res.text)
-                    #mc.send_message("WHATSAPP")
-                    mc.send_message("SMS")
+                    if "behavior: pooping" in res.text:
+                        poop_flag = True
+                    else:
+                        poop_flag = False
+
+                    bt = BackofficeTrello(url, image_full_details, poop_flag)
+                    card = bt.open_trello_ticket()
+                    # print(card)
+                    if poop_flag:
+                        rc = dogRecorder(camera_url, 10, card['id'])
+                        video_file = rc.record_movie()
+                        bt.add_attachment_to_ticket(video_file, card['id'])
+
+                    # mc = MessageCenter(url, res.text)
+                    # mc.send_message("WHATSAPP")
+                    # mc.send_message("SMS")
         except:
             pass
 
